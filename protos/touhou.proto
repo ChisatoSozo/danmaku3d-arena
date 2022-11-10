@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package touhou;
+
+message Empty {}
+
+message Vector {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Quaternion {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+
+message Transform {
+    Vector position = 1;
+    Quaternion rotation = 2;
+}
+
+enum MovementState {
+    WALKING = 1;
+    FLYING = 2;
+}
+
+message Pose {
+    Transform root = 1;
+    Transform head = 2;
+    Transform leftHand = 3;
+    Transform rightHand = 4;
+    MovementState movementState = 5;
+}
+
+message NamedTransform {
+    string username = 1;
+    Pose transform = 2; 
+}
+
+message TransformSyncRequest {
+    NamedTransform namedTransform = 1;
+}
+
+message TransformSyncReply {
+    repeated NamedTransform otherNamedTransforms = 1;
+}
+
+message LoginRequest {
+    string username = 1;
+}
+
+message GameConfig {
+    int32 milliStep = 1;
+}
+
+message LoginReply {
+    string username = 1;
+    GameConfig config = 2;
+}
+
+service GameService {
+    rpc Login(LoginRequest) returns (LoginReply);
+    rpc TransformSync(stream TransformSyncRequest) returns (stream TransformSyncReply);
+}
