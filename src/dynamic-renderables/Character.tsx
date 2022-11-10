@@ -11,7 +11,9 @@ export const Character = ({ username }: CharacterProps) => {
       name={"transform-" + username}
       position={mutableGlobals.poseStore[username].root.position}
     >
-      <sphere name={username} />
+      <sphere name={username}>
+        <standardMaterial name="greymat" useLogarithmicDepth />
+      </sphere>
     </StableTransformNode>
   );
 };

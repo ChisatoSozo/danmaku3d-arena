@@ -2,10 +2,10 @@ import { Quaternion, Vector3 } from "@babylonjs/core";
 import { useEffect, useMemo } from "react";
 import { useAfterRender } from "react-babylonjs";
 import { useUsers } from "../containers/UserContainer";
-import { GameServiceClientStreaming } from "../protos-generated/proto.def";
-import { touhou } from "../protos-generated/proto.pbjs";
+import { GameServiceClientStreaming } from "../protos-generated-client/proto.def";
+import { touhou } from "../protos-generated-client/proto.pbjs";
 import { arrayEquals } from "../utils/CollectionUtils";
-import { getPose, mutableGlobals } from "../utils/MutableGlobals";
+import { getPose, mutableGlobals, Pose } from "../utils/MutableGlobals";
 
 const poseFromProto = (proto: touhou.IPose) => {
   return {
@@ -65,9 +65,70 @@ const poseFromProto = (proto: touhou.IPose) => {
   };
 };
 
+const protoFromPose = (pose: Pose) => {
+  return {
+    head: {
+      position: {
+        x: pose.head?.position?.x || 0,
+        y: pose.head?.position?.y || 0,
+        z: pose.head?.position?.z || 0,
+      },
+      rotation: {
+        x: pose.head?.rotation?.x || 0,
+        y: pose.head?.rotation?.y || 0,
+        z: pose.head?.rotation?.z || 0,
+        w: pose.head?.rotation?.w || 0,
+      },
+    },
+    root: {
+      position: {
+        x: pose.root?.position?.x || 0,
+        y: pose.root?.position?.y || 0,
+        z: pose.root?.position?.z || 0,
+      },
+      rotation: {
+        x: pose.root?.rotation?.x || 0,
+        y: pose.root?.rotation?.y || 0,
+        z: pose.root?.rotation?.z || 0,
+        w: pose.root?.rotation?.w || 0,
+      },
+    },
+    leftHand: {
+      position: {
+        x: pose.leftHand?.position?.x || 0,
+        y: pose.leftHand?.position?.y || 0,
+        z: pose.leftHand?.position?.z || 0,
+      },
+      rotation: {
+        x: pose.leftHand?.rotation?.x || 0,
+        y: pose.leftHand?.rotation?.y || 0,
+        z: pose.leftHand?.rotation?.z || 0,
+        w: pose.leftHand?.rotation?.w || 0,
+      },
+    },
+    rightHand: {
+      position: {
+        x: pose.rightHand?.position?.x || 0,
+        y: pose.rightHand?.position?.y || 0,
+        z: pose.rightHand?.position?.z || 0,
+      },
+      rotation: {
+        x: pose.rightHand?.rotation?.x || 0,
+        y: pose.rightHand?.rotation?.y || 0,
+        z: pose.rightHand?.rotation?.z || 0,
+        w: pose.rightHand?.rotation?.w || 0,
+      },
+    },
+    movementState: pose.movementState || touhou.MovementState.WALKING,
+  };
+};
+
 export const Online = () => {
   const client = useMemo(() => {
-    return new GameServiceClientStreaming("http://localhost:5000", true);
+    return new GameServiceClientStreaming(
+      `ws://${window.location.hostname}:5000`,
+      true
+    );
   }, []);
 
   const transformSyncStream = useMemo(() => {
@@ -90,6 +151,7 @@ export const Online = () => {
             }
             if (username !== mutableGlobals.username) {
               const pose = poseFromProto(transform);
+
               if (!mutableGlobals.poseStore[username]) {
                 mutableGlobals.poseStore[username] = pose;
               }
@@ -150,10 +212,10 @@ export const Online = () => {
   useAfterRender(() => {
     transformSyncStream.sendStream.send({
       namedTransform: {
-        transform: getPose(),
+        username: mutableGlobals.username,
+        transform: protoFromPose(getPose()),
       },
     });
-    console.log("sent");
   });
 
   return null;

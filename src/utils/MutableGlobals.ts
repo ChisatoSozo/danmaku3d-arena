@@ -1,29 +1,31 @@
 import { Quaternion, Vector3 } from "@babylonjs/core";
 import { v4 } from "uuid";
-import { touhou } from "../protos-generated/proto.pbjs";
+import { touhou } from "../protos-generated-client/proto.pbjs";
+
+export interface Pose {
+  head: {
+    position: Vector3;
+    rotation: Quaternion;
+  };
+  root: {
+    position: Vector3;
+    rotation: Quaternion;
+  };
+  leftHand?: {
+    position: Vector3;
+    rotation: Quaternion;
+  };
+  rightHand?: {
+    position: Vector3;
+    rotation: Quaternion;
+  };
+  movementState: touhou.MovementState;
+}
 
 interface MutableGlobals {
   username: string;
   poseStore: {
-    [username: string]: {
-      head: {
-        position: Vector3;
-        rotation: Quaternion;
-      };
-      root: {
-        position: Vector3;
-        rotation: Quaternion;
-      };
-      leftHand?: {
-        position: Vector3;
-        rotation: Quaternion;
-      };
-      rightHand?: {
-        position: Vector3;
-        rotation: Quaternion;
-      };
-      movementState: touhou.MovementState;
-    };
+    [username: string]: Pose;
   };
 }
 
@@ -38,7 +40,7 @@ export const mutableGlobals: MutableGlobals = {
         rotation: new Quaternion(),
       },
       root: {
-        position: new Vector3(0, 0, 0),
+        position: new Vector3(0, 2, 0),
         rotation: new Quaternion(),
       },
       movementState: touhou.MovementState.WALKING,

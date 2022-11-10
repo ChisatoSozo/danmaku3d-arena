@@ -1,12 +1,12 @@
 import { Vector2, Vector3 } from "@babylonjs/core";
 import { useEffect, useRef } from "react";
 import { useBeforeRender } from "react-babylonjs";
-import { touhou } from "../protos-generated/proto.pbjs";
+import { touhou } from "../protos-generated-client/proto.pbjs";
 import { getMovementState, getPose } from "../utils/MutableGlobals";
 import { actionObservables } from "./ActionObservables";
 
 export const Physics = () => {
-  const velocity = useRef(new Vector3());
+  const movement = useRef(new Vector2());
 
   useEffect(() => {
     const handleMovement = (move: Vector2) => {
@@ -14,11 +14,7 @@ export const Physics = () => {
         return;
       }
 
-      velocity.current = new Vector3(move.x, 0, move.y);
-      velocity.current.rotateByQuaternionToRef(
-        getPose().root.rotation,
-        velocity.current
-      );
+      movement.current = move;
     };
 
     const observer = actionObservables.move.add(handleMovement);
@@ -28,8 +24,15 @@ export const Physics = () => {
     };
   }, []);
 
-  useBeforeRender(() => {
-    getPose().root.position.addInPlace(velocity.current);
+  useBeforeRender((data) => {
+    if (!movement.current) {
+      return;
+    }
+    let velocity = new Vector3(movement.current.x, 0, movement.current.y);
+    velocity.rotateByQuaternionToRef(getPose().root.rotation, velocity);
+
+    const deltaS = data.deltaTime / 1000 || 0;
+    getPose().root.position.addInPlace(velocity.scale(deltaS * 10));
   });
 
   return null;

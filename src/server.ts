@@ -1,10 +1,10 @@
 /* eslint-disable no-loop-func */
-import { GameServiceServerStreaming } from "./protos-generated/proto.def";
-import { touhou } from "./protos-generated/proto.pbjs";
+import { touhou } from "./protos-generated-client/proto.pbjs";
+import { GameServiceServerStreaming } from "./protos-generated-server/proto.def";
 
 let players: {
   [username: string]: touhou.IPose;
-};
+} = {};
 
 let TIME_STEP = 10;
 
@@ -16,7 +16,7 @@ async function* step() {
 
   let keepGoing = true;
 
-  let interval = window.setInterval(() => {
+  let interval = setInterval(() => {
     outerResolve();
     promise = new Promise<void>((resolve, reject) => {
       outerResolve = resolve;
@@ -28,7 +28,7 @@ async function* step() {
     yield {
       end: () => {
         keepGoing = false;
-        window.clearInterval(interval);
+        clearInterval(interval);
       },
     };
   }
@@ -48,11 +48,13 @@ const server = new GameServiceServerStreaming({
     let endServerIterable: () => void;
 
     const ingest = async () => {
+      let outerUsername;
       for await (let { namedTransform } of clientIterable) {
         if (!namedTransform) {
           continue;
         }
         const { username, transform } = namedTransform;
+        outerUsername = username;
 
         if (!username || !transform) {
           continue;
@@ -63,8 +65,16 @@ const server = new GameServiceServerStreaming({
         }
 
         players[username] = transform;
+
+        console.log(transform.root?.position);
       }
+
       endServerIterable();
+
+      if (outerUsername) {
+        delete players[outerUsername];
+        console.log(outerUsername + " has disconnected");
+      }
     };
 
     ingest();

@@ -2,7 +2,7 @@ import { Matrix, Scalar } from "@babylonjs/core";
 import { Quaternion, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import React, { useCallback, useEffect } from "react";
 import { useEngine } from "react-babylonjs";
-import { touhou } from "../protos-generated/proto.pbjs";
+import { touhou } from "../protos-generated-client/proto.pbjs";
 import { modDist, modRange } from "../utils/MathUtils";
 import { getMovementState, getPose } from "../utils/MutableGlobals";
 import { StableTransformNode } from "../utils/ReactBabylonUtils";
@@ -102,7 +102,7 @@ export const PlayerCamera: React.FC<PlayerCameraProps> = () => {
         fov={1.0472}
         name="camera"
         minZ={0.1}
-        maxZ={100}
+        maxZ={10000}
         position={new Vector3(0, 0, 0)}
       />
     </StableTransformNode>
