@@ -1,8 +1,10 @@
 import { Quaternion, Vector3 } from "@babylonjs/core";
 import { useEffect, useMemo } from "react";
 import { useAfterRender } from "react-babylonjs";
+import { useUsers } from "../containers/UserContainer";
 import { GameServiceClientStreaming } from "../protos-generated/proto.def";
 import { touhou } from "../protos-generated/proto.pbjs";
+import { arrayEquals } from "../utils/CollectionUtils";
 import { getPose, mutableGlobals } from "../utils/MutableGlobals";
 
 const poseFromProto = (proto: touhou.IPose) => {
@@ -65,16 +67,22 @@ const poseFromProto = (proto: touhou.IPose) => {
 
 export const Online = () => {
   const client = useMemo(() => {
-    return new GameServiceClientStreaming("http://localhost:5000");
+    return new GameServiceClientStreaming("http://localhost:5000", true);
   }, []);
 
   const transformSyncStream = useMemo(() => {
     return client.TransformSync();
   }, [client]);
 
+  const { setUsers } = useUsers();
+
   useEffect(() => {
     const updatePositions = async () => {
       for await (let namedTransform of transformSyncStream.serverIterable) {
+        let usernames = namedTransform.otherNamedTransforms?.map(
+          (otherNamedTransform) => otherNamedTransform.username
+        );
+
         namedTransform.otherNamedTransforms?.forEach(
           ({ username, transform }) => {
             if (!username || !transform) {
@@ -114,13 +122,30 @@ export const Online = () => {
             }
           }
         );
+
+        setUsers((users) => {
+          if (!usernames) {
+            return users;
+          }
+          const nonEmpty = usernames.filter(
+            (username) => !!username && username !== mutableGlobals.username
+          ) as string[];
+
+          nonEmpty.sort();
+
+          if (arrayEquals(nonEmpty, users)) {
+            return users;
+          }
+
+          return nonEmpty;
+        });
       }
     };
     updatePositions();
     return () => {
       transformSyncStream.sendStream.close();
     };
-  }, [transformSyncStream]);
+  }, [setUsers, transformSyncStream]);
 
   useAfterRender(() => {
     transformSyncStream.sendStream.send({
@@ -128,5 +153,8 @@ export const Online = () => {
         transform: getPose(),
       },
     });
+    console.log("sent");
   });
+
+  return null;
 };

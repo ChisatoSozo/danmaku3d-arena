@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/uuid": "^8.3.4",
     "grpc-over-websocket": "^0.0.10",
+    "node-polyfill-webpack-plugin": "^2.0.1",
     "react": "^18.2.0",
     "react-babylonjs": "^3.1.13",
     "react-dom": "^18.2.0",

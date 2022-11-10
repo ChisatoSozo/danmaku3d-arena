@@ -58,6 +58,10 @@ const server = new GameServiceServerStreaming({
           continue;
         }
 
+        if (!players[username]) {
+          console.log(username + " has connected");
+        }
+
         players[username] = transform;
       }
       endServerIterable();
