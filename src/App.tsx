@@ -1,8 +1,9 @@
 import { Vector3 } from "@babylonjs/core";
 import "@babylonjs/loaders";
-import { Engine, Scene } from "react-babylonjs";
+import { Scene } from "react-babylonjs";
 import { UserContainer } from "./containers/UserContainer";
 import { Characters } from "./dynamic-renderables/Characters";
+import Engine from "./forks/Engine";
 import { Online } from "./network/Online";
 import { BindActionObservables } from "./player/ActionObservables";
 import { Physics } from "./player/Physics";
