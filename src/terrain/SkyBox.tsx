@@ -30,7 +30,7 @@ export const SkyBox: React.FC<SkyBoxProps> = ({ skyBoxRef }) => {
           name="skyTexture"
           assignTo="reflectionTexture"
           coordinatesMode={Texture.SKYBOX_MODE}
-          rootUrl="/assets/skybox/TropicalSunnyDay"
+          rootUrl="/textures/skybox/TropicalSunnyDay"
         />
       </standardMaterial>
     </box>

@@ -2,7 +2,11 @@ import { Vector2, Vector3 } from "@babylonjs/core";
 import { useEffect, useRef } from "react";
 import { useBeforeRender } from "react-babylonjs";
 import { touhou } from "../protos-generated-client/proto.pbjs";
-import { getMovementState, getPose } from "../utils/MutableGlobals";
+import {
+  getMovementState,
+  getPose,
+  mutableGlobals,
+} from "../utils/MutableGlobals";
 import { actionObservables } from "./ActionObservables";
 
 export const Physics = () => {
@@ -33,6 +37,14 @@ export const Physics = () => {
 
     const deltaS = data.deltaTime / 1000 || 0;
     getPose().root.position.addInPlace(velocity.scale(deltaS * 10));
+
+    mutableGlobals.enemies = [
+      {
+        position: getPose().root.position,
+        radius: 1,
+        health: 100,
+      },
+    ];
   });
 
   return null;

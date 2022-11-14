@@ -1,0 +1,1 @@
+updatedValue = position + (velocity * delta);

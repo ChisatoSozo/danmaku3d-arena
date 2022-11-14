@@ -9,12 +9,15 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@types/object-hash": "^2.2.1",
     "@types/uuid": "^8.3.4",
     "grpc-over-websocket": "^0.0.11",
+    "object-hash": "^3.0.0",
     "react": "^18.2.0",
     "react-babylonjs": "^3.1.13",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
+    "ts-node": "^10.9.1",
     "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
   },
@@ -23,12 +26,25 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "ts-node --esm src/server.ts"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "rules": {
+      "react-hooks/exhaustive-deps": [
+        "warn",
+        {
+          "additionalHooks": "useDeltaBeforeRender"
+        }
+      ]
+    },
+    "ignorePatterns": [
+      "src/protos-generated-client/**",
+      "src/protos-generated-server/**"
     ]
   },
   "browserslist": {

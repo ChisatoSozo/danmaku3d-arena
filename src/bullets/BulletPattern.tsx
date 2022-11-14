@@ -1,4 +1,5 @@
 import {
+  Camera,
   Matrix,
   Mesh,
   Quaternion,
@@ -8,6 +9,7 @@ import {
 } from "@babylonjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useScene } from "react-babylonjs";
+import { MeshFromAssetDefinition } from "../components/MeshFromAssetDefinition";
 import { CustomFloatProceduralTexture } from "../forks/CustomFloatProceduralTexture";
 import { useDeltaBeforeRender } from "../hooks/useDeltaBeforeRender";
 import { useNormalizedFrameSkipRef } from "../hooks/useNormalizedFrameSkipRef";
@@ -20,20 +22,20 @@ import { findMeshChild, makeInstances } from "../utils/BabylonUtils";
 import DifferentialPositionVelocityCollisionSystem from "../utils/DifferentialPositionVelocityCollisionSystem";
 import { MAX_ACTIVE_ENEIMIES } from "../utils/EngineConstants";
 import { getPose, mutableGlobals } from "../utils/MutableGlobals";
-import { MeshFromAssetDefinition } from "./MeshFromAssetDefinition";
-import { makeClickParticles } from "./wordfind-vr-particles.ts/clickParticles";
 
 interface BulletPatternComponentProps {
+  username: string;
   bulletPatternDefinition: BulletPatternAssetDefinition;
 }
 
 const bulletMaterialAssetVersions: { [key: string]: number } = {};
 
 const bindMutableGlobals = (
+  username: string,
   bindTo: ShaderMaterial | CustomFloatProceduralTexture
 ) => {
-  bindTo.setVector3("playerPosition", getPose().root.position);
-  bindTo.setFloat("firing", 0);
+  bindTo.setVector3("playerPosition", getPose(username).root.position);
+  bindTo.setFloat("firing", getPose(username).shootingState === true ? 1 : 0);
   const enemyPositionArray = mutableGlobals.enemies
     .map((enemy) => [enemy.position.x, enemy.position.y, enemy.position.z])
     .flat();
@@ -87,6 +89,7 @@ interface PlayerBulletCollision {
   enemyPosition: Vector3;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const readPlayerBulletCollisions = (collisions: Float32Array) => {
   const collisionsOut: PlayerBulletCollision[] = [];
   for (let i = 0; i < collisions.length; i += 4) {
@@ -107,9 +110,11 @@ const readPlayerBulletCollisions = (collisions: Float32Array) => {
 };
 
 export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
+  username,
   bulletPatternDefinition,
 }) => {
   const scene = useScene();
+
   const bulletPatternAsset = useBulletPatternAsset(bulletPatternDefinition);
 
   const bulletVertexAsset = useGLSLAsset(bulletPatternAsset.vertex);
@@ -141,7 +146,7 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
   const timingsAsset = useTimingAsset(bulletPatternAsset.timings);
 
   const [mesh, setMesh] = useState<Mesh>();
-  const transformNodeRef = useRef<TransformNode>();
+  const transformNodeRef = useRef<TransformNode>(null);
 
   const _fireRate = useMemo(() => {
     return bulletPatternAsset.bulletPatternType === "player"
@@ -194,11 +199,10 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
   const timeSinceStart = useRef(0.001);
 
   const dpvcsMaterial = useMemo(() => {
-    if (!scene) return;
+    const parent = transformNodeRef.current;
     if (!scene) return;
     if (!bulletMaterialAsset) return;
     if (!mesh) return;
-    const parent = transformNodeRef.current;
     if (!parent) return;
 
     const newVersion =
@@ -233,8 +237,14 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
         defines: [
           "#define SHADER_VERSION " +
             bulletMaterialAssetVersions[bulletMaterialAsset.shader],
+          "#define LOGARITHMICDEPTH 1",
         ],
       }
+    );
+    const camera = scene.activeCamera as Camera;
+    material.setFloat(
+      "logarithmicDepthConstant",
+      2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2)
     );
     material.setTexture("positionSampler", _startPositionsState);
     material.setTexture("velocitySampler", _startVelocitiesState);
@@ -251,7 +261,7 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
       fireRate: 1 / frameSkipRef.current,
     });
 
-    bindMutableGlobals(material);
+    bindMutableGlobals(username, material);
 
     makeInstances(mesh, bulletPatternAsset.initialPositions.generator._count);
 
@@ -287,7 +297,7 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
             fireRate: 1 / frameSkipRef.current,
           });
 
-          bindmutableGlobals(texture);
+          bindMutableGlobals(username, texture);
         },
       }),
       material,
@@ -296,62 +306,74 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
     scene,
     bulletMaterialAsset,
     mesh,
-    bulletVertexAsset,
+    bulletVertexAsset.shader,
     _startPositionsState,
     _startVelocitiesState,
     _startCollisionsState,
-    bulletPatternAsset,
+    bulletPatternAsset.size,
+    bulletPatternAsset.initialPositions.generator._count,
+    fireVelocity,
     frameSkipRef,
+    username,
     count,
-    positionShader,
-    velocityShader,
-    collisionShader,
+    positionShader.shader,
+    velocityShader.shader,
+    collisionShader.shader,
     downsampleCollisions,
     initialPositionSampler,
     initialVelocitiesSampler,
     timingsAsset,
-    fireVelocity,
   ]);
 
-  useDeltaBeforeRender((scene, deltaS) => {
-    if (!dpvcsMaterial) return;
-    const parent = transformNodeRef.current;
-    if (!parent) return;
-    timeSinceStart.current += deltaS;
-    const updateResult = dpvcsMaterial.dpvcs.update(deltaS, (texture) => {
-      bindFrameStateUniforms(texture, {
+  useDeltaBeforeRender(
+    (scene, deltaS) => {
+      if (!dpvcsMaterial) return;
+      const parent = transformNodeRef.current;
+      if (!parent) return;
+      timeSinceStart.current += deltaS;
+      const updateResult = dpvcsMaterial.dpvcs.update(deltaS, (texture) => {
+        bindFrameStateUniforms(texture, {
+          timeSinceStart: timeSinceStart.current,
+          parentWorldMatrix: parent.getWorldMatrix(),
+          fireRate: 1 / frameSkipRef.current,
+        });
+        bindMutableGlobals(username, texture);
+      });
+
+      if (!updateResult) return;
+
+      const [newPositions, newVelocities, newCollisions] = updateResult;
+
+      newCollisions.readPixelsAsync()?.then((collisions) => {
+        if (bulletPatternAsset.bulletPatternType === "player") {
+          const collisionResults = readPlayerBulletCollisions(
+            collisions as Float32Array
+          );
+          collisionResults.forEach((result) => {
+            mutableGlobals.enemies[result.enemyIndex].health -=
+              bulletPatternAsset.value;
+            console.log("enemy hit", result.enemyIndex);
+            if (!mutableGlobals.dead) {
+              window.location.href =
+                "https://www.youtube.com/watch?v=-ZGlaAxB7nI";
+            }
+            mutableGlobals.dead = true;
+          });
+        }
+      });
+
+      dpvcsMaterial.material.setTexture("positionSampler", newPositions);
+      dpvcsMaterial.material.setTexture("velocitySampler", newVelocities);
+      dpvcsMaterial.material.setTexture("collisionSampler", newCollisions);
+      bindFrameStateUniforms(dpvcsMaterial.material, {
         timeSinceStart: timeSinceStart.current,
         parentWorldMatrix: parent.getWorldMatrix(),
         fireRate: 1 / frameSkipRef.current,
       });
-      bindmutableGlobals(texture);
-    });
-
-    if (!updateResult) return;
-
-    const [newPositions, newVelocities, newCollisions] = updateResult;
-
-    newCollisions.readPixelsAsync()?.then((collisions) => {
-      if (bulletPatternAsset.bulletPatternType === "player") {
-        const collisionResults = readPlayerBulletCollisions(collisions);
-        collisionResults.forEach((result) => {
-          mutableGlobals.enemies[result.enemyIndex].health -=
-            bulletPatternAsset.value;
-          makeClickParticles(scene, [result.enemyPosition]);
-        });
-      }
-    });
-
-    dpvcsMaterial.material.setTexture("positionSampler", newPositions);
-    dpvcsMaterial.material.setTexture("velocitySampler", newVelocities);
-    dpvcsMaterial.material.setTexture("collisionSampler", newCollisions);
-    bindFrameStateUniforms(dpvcsMaterial.material, {
-      timeSinceStart: timeSinceStart.current,
-      parentWorldMatrix: parent.getWorldMatrix(),
-      fireRate: 1 / frameSkipRef.current,
-    });
-    bindmutableGlobals(dpvcsMaterial.material);
-  });
+      bindMutableGlobals(username, dpvcsMaterial.material);
+    },
+    [dpvcsMaterial, frameSkipRef, username]
+  );
 
   useEffect(() => {
     const oldDpvcsMaterial = dpvcsMaterial;

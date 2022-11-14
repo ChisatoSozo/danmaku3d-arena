@@ -33,6 +33,7 @@ message Pose {
     Transform leftHand = 3;
     Transform rightHand = 4;
     MovementState movementState = 5;
+    bool shootingState = 6;
 }
 
 message NamedTransform {
@@ -61,7 +62,18 @@ message LoginReply {
     GameConfig config = 2;
 }
 
+enum EventEnum {
+    SHOOT = 1;
+    UNSHOOT = 2;
+}
+
+message NamedEvent {
+    EventEnum event = 1;
+    string username = 2;
+}
+
 service GameService {
     rpc Login(LoginRequest) returns (LoginReply);
     rpc TransformSync(stream TransformSyncRequest) returns (stream TransformSyncReply);
+    rpc EventStream(stream NamedEvent) returns (stream NamedEvent);
 }

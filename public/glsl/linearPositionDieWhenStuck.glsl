@@ -1,0 +1,1 @@
+updatedValue = length(velocity) < 0.01 ? vec3(-510., -510., -510.) : position + (velocity * delta);

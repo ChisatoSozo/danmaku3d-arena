@@ -2,6 +2,7 @@ import { Quaternion, Vector3 } from "@babylonjs/core";
 import { useEffect, useMemo } from "react";
 import { useAfterRender } from "react-babylonjs";
 import { useUsers } from "../containers/UserContainer";
+import { actionObservables } from "../player/ActionObservables";
 import { GameServiceClientStreaming } from "../protos-generated-client/proto.def";
 import { touhou } from "../protos-generated-client/proto.pbjs";
 import { arrayEquals } from "../utils/CollectionUtils";
@@ -62,6 +63,7 @@ const poseFromProto = (proto: touhou.IPose) => {
       ),
     },
     movementState: proto.movementState || touhou.MovementState.WALKING,
+    shootingState: proto.shootingState || false,
   };
 };
 
@@ -120,6 +122,7 @@ const protoFromPose = (pose: Pose) => {
       },
     },
     movementState: pose.movementState || touhou.MovementState.WALKING,
+    shootingState: pose.shootingState || false,
   };
 };
 
@@ -135,7 +138,27 @@ export const Online = () => {
     return client.TransformSync();
   }, [client]);
 
-  const { setUsers } = useUsers();
+  const eventStream = useMemo(() => {
+    return client.EventStream();
+  }, [client]);
+
+  const { users, setUsers } = useUsers();
+
+  useEffect(() => {
+    const knownUsers = Object.keys(mutableGlobals.poseStore);
+
+    const usersAndMe = [...knownUsers, mutableGlobals.username];
+
+    //get usernames that are no longer in the room
+    const usersToRemove = knownUsers.filter(
+      (user) => !usersAndMe.includes(user)
+    );
+
+    //remove users that are no longer in the room
+    usersToRemove.forEach((user) => {
+      delete mutableGlobals.poseStore[user];
+    });
+  }, [users]);
 
   useEffect(() => {
     const updatePositions = async () => {
@@ -189,6 +212,7 @@ export const Online = () => {
           if (!usernames) {
             return users;
           }
+
           const nonEmpty = usernames.filter(
             (username) => !!username && username !== mutableGlobals.username
           ) as string[];
@@ -208,6 +232,43 @@ export const Online = () => {
       transformSyncStream.sendStream.close();
     };
   }, [setUsers, transformSyncStream]);
+
+  useEffect(() => {
+    const updateEvents = async () => {
+      for await (let event of eventStream.serverIterable) {
+        if (!event.username) {
+          continue;
+        }
+        if (event.username === mutableGlobals.username) {
+          continue;
+        }
+
+        switch (event.event) {
+          case touhou.EventEnum.SHOOT:
+            mutableGlobals.poseStore[event.username].shootingState = true;
+            break;
+          case touhou.EventEnum.UNSHOOT:
+            mutableGlobals.poseStore[event.username].shootingState = false;
+            break;
+        }
+      }
+    };
+    updateEvents();
+
+    const sendShoot = (shoot: boolean) => {
+      eventStream.sendStream.send({
+        username: mutableGlobals.username,
+        event: shoot ? touhou.EventEnum.SHOOT : touhou.EventEnum.UNSHOOT,
+      });
+    };
+
+    const shootObservable = actionObservables.shoot.add(sendShoot);
+
+    return () => {
+      eventStream.sendStream.close();
+      actionObservables.shoot.remove(shootObservable);
+    };
+  }, [eventStream]);
 
   useAfterRender(() => {
     transformSyncStream.sendStream.send({

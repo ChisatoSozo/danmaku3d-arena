@@ -1,0 +1,87 @@
+{
+  "_url": "defaultPlayerBulletPattern.json",
+  "bulletPatternType": "player",
+  "parented": false,
+  "value": 1,
+  "size": 0.2,
+  "fireRate": 10,
+  "fireVelocity": 20,
+  "_downsampleCollisions": false,
+  "vertex": {
+    "isAsset": true,
+    "type": "glsl",
+    "shaderType": "vertex",
+    "url": "standardVertex.glsl"
+  },
+  "material": {
+    "isAsset": true,
+    "type": "glsl",
+    "shaderType": "fragment",
+    "url": "fresnel.glsl"
+  },
+  "mesh": { "isAsset": true, "type": "mesh", "url": "sphere.glb" },
+  "_startPositionsState": {
+    "isAsset": true,
+    "type": "vector",
+    "generator": { "type": "blank", "_count": 256 }
+  },
+  "_startVelocitiesState": {
+    "isAsset": true,
+    "type": "vector",
+    "generator": { "type": "blank", "_count": 256 }
+  },
+  "_startCollisionsState": {
+    "isAsset": true,
+    "type": "vector",
+    "generator": { "type": "blank", "_count": 256 }
+  },
+  "initialPositions": {
+    "isAsset": true,
+    "type": "vector",
+    "generator": {
+      "type": "burst",
+      "_count": 256,
+      "radius": 1,
+      "startTheta": 0,
+      "thetaLength": 6.283185307179586,
+      "startY": 1,
+      "yLength": 2
+    }
+  },
+  "initialVelocities": {
+    "isAsset": true,
+    "type": "vector",
+    "generator": {
+      "type": "burst",
+      "_count": 256,
+      "radius": 1,
+      "startTheta": 0,
+      "thetaLength": 6.283185307179586,
+      "startY": 1,
+      "yLength": 2
+    }
+  },
+  "timings": {
+    "isAsset": true,
+    "type": "timing",
+    "generator": { "type": "uniform", "_count": 256, "time": 0 }
+  },
+  "positionUpdateGLSL": {
+    "isAsset": true,
+    "type": "glsl",
+    "shaderType": "pixel",
+    "url": "linearPosition.glsl"
+  },
+  "velocityUpdateGLSL": {
+    "isAsset": true,
+    "type": "glsl",
+    "shaderType": "pixel",
+    "url": "linearVelocity.glsl"
+  },
+  "_collisionFunctionGLSL": {
+    "isAsset": true,
+    "type": "glsl",
+    "shaderType": "pixel",
+    "url": "playerBulletCollision.glsl"
+  }
+}

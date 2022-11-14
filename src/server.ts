@@ -2,6 +2,32 @@
 import { touhou } from "./protos-generated-client/proto.pbjs";
 import { GameServiceServerStreaming } from "./protos-generated-server/proto.def";
 
+type Observer<T> = (value: T) => void;
+
+class Observable<T> {
+  _observers: Observer<T>[];
+
+  constructor() {
+    this._observers = [];
+  }
+
+  add(observer: Observer<T>) {
+    this._observers.push(observer);
+    return observer;
+  }
+
+  remove(observer: Observer<T>) {
+    const index = this._observers.indexOf(observer);
+    if (index !== -1) {
+      this._observers.splice(index, 1);
+    }
+  }
+
+  notify(data: T) {
+    this._observers.forEach((observer) => observer(data));
+  }
+}
+
 let players: {
   [username: string]: touhou.IPose;
 } = {};
@@ -34,6 +60,51 @@ async function* step() {
   }
 }
 
+const eventObservable = new Observable<touhou.INamedEvent>();
+
+const observableToAsyncIterable = <T>(
+  observable: Observable<T>
+): AsyncIterable<T> => {
+  return {
+    [Symbol.asyncIterator]() {
+      let resolve: (value: IteratorResult<T>) => void;
+      let promise = new Promise<IteratorResult<T>>((res, rej) => {
+        resolve = res;
+      });
+
+      let subscription = observable.add((value) => {
+        resolve({
+          done: false,
+          value,
+        });
+        promise = new Promise<IteratorResult<T>>((res, rej) => {
+          resolve = res;
+        });
+      });
+
+      return {
+        next() {
+          return promise;
+        },
+        return() {
+          observable.remove(subscription);
+          return Promise.resolve({
+            done: true,
+            value: undefined,
+          });
+        },
+        throw(error) {
+          observable.remove(subscription);
+          return Promise.reject(error);
+        },
+        [Symbol.asyncIterator]() {
+          return this;
+        },
+      };
+    },
+  };
+};
+
 const server = new GameServiceServerStreaming({
   Login: ({ username }) => {
     if (!username) {
@@ -65,11 +136,9 @@ const server = new GameServiceServerStreaming({
         }
 
         players[username] = transform;
-
-        console.log(transform.root?.position);
       }
 
-      endServerIterable();
+      endServerIterable?.();
 
       if (outerUsername) {
         delete players[outerUsername];
@@ -95,6 +164,24 @@ const server = new GameServiceServerStreaming({
     }
 
     return serverIterable();
+  },
+  EventStream: (clientIterable) => {
+    let endServerIterable: () => void;
+
+    const ingest = async () => {
+      for await (let event of clientIterable) {
+        if (!event) {
+          continue;
+        }
+        eventObservable.notify(event);
+      }
+
+      endServerIterable?.();
+    };
+
+    ingest();
+
+    return observableToAsyncIterable(eventObservable);
   },
 });
 
