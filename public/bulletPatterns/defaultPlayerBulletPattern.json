@@ -4,8 +4,8 @@
   "parented": false,
   "value": 1,
   "size": 0.2,
-  "fireRate": 10,
-  "fireVelocity": 20,
+  "fireRate": 20,
+  "fireVelocity": 100,
   "_downsampleCollisions": false,
   "vertex": {
     "isAsset": true,

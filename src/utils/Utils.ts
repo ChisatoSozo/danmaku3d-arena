@@ -1,3 +1,4 @@
+export const host = `${window.location.protocol}//${window.location.hostname}`;
 export const assetHost = `${window.location.protocol}//${window.location.hostname}:3000/`;
 
 export const assertNever = (shouldBeNever: never) => {
@@ -24,3 +25,5 @@ export const camelCaseToSpaces = (str: string) => {
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (str) => str.toUpperCase());
 };
+
+export const sleep0 = () => new Promise((resolve) => setTimeout(resolve, 0));

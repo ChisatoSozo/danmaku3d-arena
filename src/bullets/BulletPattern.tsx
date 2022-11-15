@@ -1,12 +1,4 @@
-import {
-  Camera,
-  Matrix,
-  Mesh,
-  Quaternion,
-  ShaderMaterial,
-  TransformNode,
-  Vector3,
-} from "@babylonjs/core";
+import { Camera, Matrix, Mesh, Quaternion, ShaderMaterial, TransformNode, Vector3 } from "@babylonjs/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useScene } from "react-babylonjs";
 import { MeshFromAssetDefinition } from "../components/MeshFromAssetDefinition";
@@ -30,15 +22,10 @@ interface BulletPatternComponentProps {
 
 const bulletMaterialAssetVersions: { [key: string]: number } = {};
 
-const bindMutableGlobals = (
-  username: string,
-  bindTo: ShaderMaterial | CustomFloatProceduralTexture
-) => {
+const bindMutableGlobals = (username: string, bindTo: ShaderMaterial | CustomFloatProceduralTexture) => {
   bindTo.setVector3("playerPosition", getPose(username).root.position);
   bindTo.setFloat("firing", getPose(username).shootingState === true ? 1 : 0);
-  const enemyPositionArray = mutableGlobals.enemies
-    .map((enemy) => [enemy.position.x, enemy.position.y, enemy.position.z])
-    .flat();
+  const enemyPositionArray = mutableGlobals.enemies.map((enemy) => [enemy.position.x, enemy.position.y, enemy.position.z]).flat();
   const enemyRadiiArray = mutableGlobals.enemies.map((enemy) => enemy.radius);
   bindTo.setFloats("enemyPositions", enemyPositionArray);
   bindTo.setFloats("enemyRadii", enemyRadiiArray);
@@ -62,10 +49,7 @@ const bindFrameStateUniforms = (
   bindTo.setFloat("timeSinceStart", timeSinceStart);
   bindTo.setVector3("parentPosition", position);
 
-  const forward = Vector3.Forward().rotateByQuaternionToRef(
-    rotation,
-    Vector3.Zero()
-  );
+  const forward = Vector3.Forward().rotateByQuaternionToRef(rotation, Vector3.Zero());
 
   bindTo.setVector3("parentForward", forward);
   bindTo.setFloat("fireRate", Number(fireRate.toPrecision(1)));
@@ -95,11 +79,7 @@ const readPlayerBulletCollisions = (collisions: Float32Array) => {
   for (let i = 0; i < collisions.length; i += 4) {
     const enemyIndex = collisions[i + 3];
     if (enemyIndex) {
-      const enemyPosition = new Vector3(
-        collisions[i],
-        collisions[i + 1],
-        collisions[i + 2]
-      );
+      const enemyPosition = new Vector3(collisions[i], collisions[i + 1], collisions[i + 2]);
       collisionsOut.push({
         enemyIndex: enemyIndex - MAX_ACTIVE_ENEIMIES,
         enemyPosition,
@@ -109,10 +89,7 @@ const readPlayerBulletCollisions = (collisions: Float32Array) => {
   return collisionsOut;
 };
 
-export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
-  username,
-  bulletPatternDefinition,
-}) => {
+export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({ username, bulletPatternDefinition }) => {
   const scene = useScene();
 
   const bulletPatternAsset = useBulletPatternAsset(bulletPatternDefinition);
@@ -122,26 +99,14 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
 
   const positionShader = useGLSLAsset(bulletPatternAsset.positionFunctionGLSL);
   const velocityShader = useGLSLAsset(bulletPatternAsset.velocityFunctionGLSL);
-  const collisionShader = useGLSLAsset(
-    bulletPatternAsset.collisionFunctionGLSL
-  );
+  const collisionShader = useGLSLAsset(bulletPatternAsset.collisionFunctionGLSL);
 
-  const _startPositionsState = useVectorAsset(
-    bulletPatternAsset._startPositionsState
-  );
-  const _startVelocitiesState = useVectorAsset(
-    bulletPatternAsset._startVelocitiesState
-  );
-  const _startCollisionsState = useVectorAsset(
-    bulletPatternAsset._startCollisionsState
-  );
+  const _startPositionsState = useVectorAsset(bulletPatternAsset._startPositionsState);
+  const _startVelocitiesState = useVectorAsset(bulletPatternAsset._startVelocitiesState);
+  const _startCollisionsState = useVectorAsset(bulletPatternAsset._startCollisionsState);
 
-  const initialPositionSampler = useVectorAsset(
-    bulletPatternAsset.initialPositions
-  );
-  const initialVelocitiesSampler = useVectorAsset(
-    bulletPatternAsset.initialVelocities
-  );
+  const initialPositionSampler = useVectorAsset(bulletPatternAsset.initialPositions);
+  const initialVelocitiesSampler = useVectorAsset(bulletPatternAsset.initialVelocities);
 
   const timingsAsset = useTimingAsset(bulletPatternAsset.timings);
 
@@ -149,15 +114,11 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
   const transformNodeRef = useRef<TransformNode>(null);
 
   const _fireRate = useMemo(() => {
-    return bulletPatternAsset.bulletPatternType === "player"
-      ? bulletPatternAsset.fireRate
-      : 0;
+    return bulletPatternAsset.bulletPatternType === "player" ? bulletPatternAsset.fireRate : 0;
   }, [bulletPatternAsset]);
 
   const fireVelocity = useMemo(() => {
-    return bulletPatternAsset.bulletPatternType === "player"
-      ? bulletPatternAsset.fireVelocity
-      : 0;
+    return bulletPatternAsset.bulletPatternType === "player" ? bulletPatternAsset.fireVelocity : 0;
   }, [bulletPatternAsset]);
 
   const frameSkipRef = useNormalizedFrameSkipRef(60 / _fireRate);
@@ -166,10 +127,7 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
     () => bulletPatternAsset.initialPositions.generator._count,
     [bulletPatternAsset.initialPositions.generator._count]
   );
-  const downsampleCollisions = useMemo(
-    () => bulletPatternAsset._downsampleCollisions,
-    [bulletPatternAsset._downsampleCollisions]
-  );
+  const downsampleCollisions = useMemo(() => bulletPatternAsset._downsampleCollisions, [bulletPatternAsset._downsampleCollisions]);
 
   const setRootNodes = useCallback((rootNodes: TransformNode[]) => {
     if (rootNodes.length > 1) {
@@ -205,8 +163,7 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
     if (!mesh) return;
     if (!parent) return;
 
-    const newVersion =
-      bulletMaterialAssetVersions[bulletMaterialAsset.shader] ?? 0;
+    const newVersion = bulletMaterialAssetVersions[bulletMaterialAsset.shader] ?? 0;
     bulletMaterialAssetVersions[bulletMaterialAsset.shader] = newVersion + 1;
 
     const material = new ShaderMaterial(
@@ -217,35 +174,16 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
         fragment: bulletMaterialAsset.shader,
       },
       {
-        attributes: [
-          "position",
-          "normal",
-          "uv",
-          "world0",
-          "world1",
-          "world2",
-          "world3",
-        ],
-        uniforms: [
-          "worldView",
-          "worldViewProjection",
-          "view",
-          "projection",
-          "direction",
-          "cameraPosition",
-        ],
+        attributes: ["position", "normal", "uv", "world0", "world1", "world2", "world3"],
+        uniforms: ["worldView", "worldViewProjection", "view", "projection", "direction", "cameraPosition"],
         defines: [
-          "#define SHADER_VERSION " +
-            bulletMaterialAssetVersions[bulletMaterialAsset.shader],
+          "#define SHADER_VERSION " + bulletMaterialAssetVersions[bulletMaterialAsset.shader],
           "#define LOGARITHMICDEPTH 1",
         ],
       }
     );
     const camera = scene.activeCamera as Camera;
-    material.setFloat(
-      "logarithmicDepthConstant",
-      2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2)
-    );
+    material.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
     material.setTexture("positionSampler", _startPositionsState);
     material.setTexture("velocitySampler", _startVelocitiesState);
     material.setTexture("collisionSampler", _startCollisionsState);
@@ -280,10 +218,7 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
         scene,
         initialValuesFunction: (texture) => {
           texture.setTexture("initialPositionSampler", initialPositionSampler);
-          texture.setTexture(
-            "initialVelocitySampler",
-            initialVelocitiesSampler
-          );
+          texture.setTexture("initialVelocitySampler", initialVelocitiesSampler);
           texture.setTexture("timingsSampler", timingsAsset);
 
           bindInitialStateUniforms(texture, {
@@ -344,23 +279,21 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
 
       const [newPositions, newVelocities, newCollisions] = updateResult;
 
-      newCollisions.readPixelsAsync()?.then((collisions) => {
-        if (bulletPatternAsset.bulletPatternType === "player") {
-          const collisionResults = readPlayerBulletCollisions(
-            collisions as Float32Array
-          );
-          collisionResults.forEach((result) => {
-            mutableGlobals.enemies[result.enemyIndex].health -=
-              bulletPatternAsset.value;
-            console.log("enemy hit", result.enemyIndex);
-            if (!mutableGlobals.dead) {
-              window.location.href =
-                "https://www.youtube.com/watch?v=-ZGlaAxB7nI";
-            }
-            mutableGlobals.dead = true;
-          });
-        }
-      });
+      if (username !== mutableGlobals.username) {
+        newCollisions.readPixelsAsync()?.then((collisions) => {
+          if (bulletPatternAsset.bulletPatternType === "player") {
+            const collisionResults = readPlayerBulletCollisions(collisions as Float32Array);
+            collisionResults.forEach((result) => {
+              mutableGlobals.enemies[result.enemyIndex].health -= bulletPatternAsset.value;
+              console.log("enemy hit", result.enemyIndex);
+              if (!mutableGlobals.dead) {
+                window.location.href = "https://www.youtube.com/watch?v=-ZGlaAxB7nI";
+              }
+              mutableGlobals.dead = true;
+            });
+          }
+        });
+      }
 
       dpvcsMaterial.material.setTexture("positionSampler", newPositions);
       dpvcsMaterial.material.setTexture("velocitySampler", newVelocities);
@@ -372,7 +305,7 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
       });
       bindMutableGlobals(username, dpvcsMaterial.material);
     },
-    [dpvcsMaterial, frameSkipRef, username]
+    [bulletPatternAsset.bulletPatternType, bulletPatternAsset.value, dpvcsMaterial, frameSkipRef, username]
   );
 
   useEffect(() => {
@@ -393,11 +326,7 @@ export const BulletPatternComponent: React.FC<BulletPatternComponentProps> = ({
   return (
     <>
       <transformNode name="" ref={transformNodeRef} />
-      <MeshFromAssetDefinition
-        onMeshLoaded={setRootNodes}
-        name=""
-        assetDefinition={bulletPatternAsset.mesh}
-      />
+      <MeshFromAssetDefinition onMeshLoaded={setRootNodes} name="" assetDefinition={bulletPatternAsset.mesh} />
     </>
   );
 };

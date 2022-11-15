@@ -7,6 +7,7 @@ import {
 import { glslLoaded, loadGLSL } from "../loaders/glslLoader";
 import { loadMesh, meshLoaded } from "../loaders/meshLoader";
 import { loadSound, soundLoaded } from "../loaders/soundLoader";
+import { loadTerrain, terrainLoaded } from "../loaders/terrainLoader";
 import { loadTiming, timingLoaded } from "../loaders/timingsLoader";
 import { loadVector, vectorLoaded } from "../loaders/vectorLoader";
 import { Assets, makeDefaultAssets } from "../types/Assets";
@@ -135,6 +136,29 @@ export const findAndLoadAssetDefinitions = async (
             console.info(`loading bullet pattern ${assetDefinition.url}`);
           }
           await loadBulletPattern(
+            gameDefinitionName,
+            assetDefinition,
+            scene,
+            assets,
+            setStatus
+          );
+          anyUpdated = true;
+          break;
+        case "terrain":
+          if (
+            (await terrainLoaded(assetDefinition, assets)) &&
+            assetDefinition.url !== assetToReload
+          ) {
+            if (debug) {
+              console.info(`terrain ${assetDefinition.url} already loaded`);
+            }
+            break;
+          }
+          setStatus(`loading bullet pattern ${assetDefinition.url}`);
+          if (debug) {
+            console.info(`loading bullet pattern ${assetDefinition.url}`);
+          }
+          await loadTerrain(
             gameDefinitionName,
             assetDefinition,
             scene,

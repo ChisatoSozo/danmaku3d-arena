@@ -1,6 +1,7 @@
 /* eslint-disable no-loop-func */
 import { touhou } from "./protos-generated-client/proto.pbjs";
 import { GameServiceServerStreaming } from "./protos-generated-server/proto.def";
+import { Server } from "./server_terrain";
 
 type Observer<T> = (value: T) => void;
 
@@ -186,3 +187,5 @@ const server = new GameServiceServerStreaming({
 });
 
 server.listen(5000);
+
+new Server();

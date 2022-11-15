@@ -1,7 +1,7 @@
 import { Animation, TransformNode, Vector3 } from "@babylonjs/core";
 import { useEffect, useMemo, useRef } from "react";
-import { useBeforeRender } from "react-babylonjs";
 import { MeshFromAssetDefinition } from "../components/MeshFromAssetDefinition";
+import { useDeltaBeforeRender } from "../hooks/useDeltaBeforeRender";
 import { useVectorMemo } from "../hooks/useVectorMemo";
 import { EmitterDefinition } from "../types/gameDefinition/PlayableCharacterDefinition";
 import { getTarget } from "../utils/MutableGlobals";
@@ -13,19 +13,12 @@ interface EmitterProps {
   focused: boolean;
 }
 
-export const Emitter: React.FC<EmitterProps> = ({
-  username,
-  emitterDefinition,
-  focused,
-}) => {
+export const Emitter: React.FC<EmitterProps> = ({ username, emitterDefinition, focused }) => {
   const transformNodeRef = useRef<TransformNode>(null);
   const position = useVectorMemo(emitterDefinition.position);
   const unfocusPosition = useVectorMemo(emitterDefinition.position);
   const focusPosition = useVectorMemo(emitterDefinition.focusPosition);
-  const scaling = useMemo(
-    () => new Vector3(emitterDefinition.mirrored ? -1 : 1, 1, 1),
-    [emitterDefinition]
-  );
+  const scaling = useMemo(() => new Vector3(emitterDefinition.mirrored ? -1 : 1, 1, 1), [emitterDefinition]);
 
   useEffect(() => {
     if (!transformNodeRef.current) return;
@@ -54,10 +47,10 @@ export const Emitter: React.FC<EmitterProps> = ({
     }
   }, [focusPosition, focused, unfocusPosition]);
 
-  useBeforeRender(() => {
+  useDeltaBeforeRender(() => {
     if (!transformNodeRef.current) return;
     transformNodeRef.current.lookAt(getTarget(username));
-  });
+  }, [username]);
 
   return (
     <transformNode ref={transformNodeRef} position={position} name={""}>

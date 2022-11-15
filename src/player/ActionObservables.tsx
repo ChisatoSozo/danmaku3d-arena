@@ -5,6 +5,7 @@ import { getPose } from "../utils/MutableGlobals";
 export const actionObservables = {
   move: new Observable<Vector2>(),
   jump: new Observable<null>(),
+  land: new Observable<null>(),
   shoot: new Observable<boolean>(),
 };
 
@@ -43,6 +44,10 @@ export const BindActionObservables = () => {
         if (keyboardEvent.key === movementKeys[typedDirection]) {
           movementKeysDown[typedDirection] = true;
         }
+      }
+
+      if (keyboardEvent.key === " ") {
+        actionObservables.jump.notifyObservers(null);
       }
 
       emitMoveObservable();

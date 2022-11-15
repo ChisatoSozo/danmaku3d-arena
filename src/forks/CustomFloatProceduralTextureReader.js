@@ -2,15 +2,7 @@ import { allSyncs } from "./CustomFloatProceduralTexture";
 
 const readLatency = 16;
 
-export const _readTexturePixels = function (
-  engine,
-  texture,
-  width,
-  height,
-  faceIndex,
-  level,
-  buffer
-) {
+export const _readTexturePixels = function (engine, texture, width, height, faceIndex, level, buffer) {
   if (faceIndex === void 0) {
     faceIndex = -1;
   }
@@ -49,8 +41,7 @@ export const _readTexturePixels = function (
   }
 
   //swap PIXEL_PACK_BUFFER
-  texture._activePPBIndex =
-    (texture._activePPBIndex + 1) % texture._PPBWheel.length;
+  texture._activePPBIndex = (texture._activePPBIndex + 1) % texture._PPBWheel.length;
   texture._activePPB = texture._PPBWheel[texture._activePPBIndex];
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, engine._dummyFramebuffer);
@@ -71,10 +62,7 @@ export const _readTexturePixels = function (
       level
     );
   }
-  var readType =
-    texture.type !== undefined
-      ? engine._getWebGLTextureType(texture.type)
-      : gl.UNSIGNED_BYTE;
+  var readType = texture.type !== undefined ? engine._getWebGLTextureType(texture.type) : gl.UNSIGNED_BYTE;
   switch (readType) {
     case gl.UNSIGNED_BYTE:
       if (!buffer) {
@@ -94,6 +82,7 @@ export const _readTexturePixels = function (
   gl.bufferData(gl.PIXEL_PACK_BUFFER, buffer.byteLength, gl.STREAM_READ);
   gl.readPixels(0, 0, width, height, gl.RGBA, readType, 0);
   gl.bindFramebuffer(gl.FRAMEBUFFER, engine._currentFramebuffer);
+  gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
 
   const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
   if (!sync) {

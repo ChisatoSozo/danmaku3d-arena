@@ -25,6 +25,7 @@ message Transform {
 enum MovementState {
     WALKING = 1;
     FLYING = 2;
+    FALLING = 3;
 }
 
 message Pose {

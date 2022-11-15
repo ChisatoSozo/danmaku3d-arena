@@ -1,6 +1,36 @@
 import { GameDefinition } from "../types/gameDefinition/GameDefinition";
 
 export const definition: GameDefinition = {
+  stageDefinition: {
+    type: "terrain",
+    asset: {
+      isAsset: true,
+      type: "terrain",
+      url: ":6100/terrain",
+    },
+    grass: {
+      isAsset: true,
+      type: "mesh",
+      url: "grass.glb",
+    },
+    trees: [
+      {
+        isAsset: true,
+        type: "mesh",
+        url: "Tree_1.glb",
+      },
+      {
+        isAsset: true,
+        type: "mesh",
+        url: "Tree_3.glb",
+      },
+      {
+        isAsset: true,
+        type: "mesh",
+        url: "Tree_4.glb",
+      },
+    ],
+  },
   playableCharacters: [
     {
       name: "Reimu",
@@ -67,69 +97,6 @@ export const definition: GameDefinition = {
                 url: "defaultPlayerBulletPattern.json",
                 hash: "8c2b56284f066cda8e7ef49e9fcdaa00730c6da5",
               },
-            },
-          ],
-        },
-      ],
-    },
-  ],
-  stages: [
-    {
-      title: "What an Odd World",
-      subtitle: "I wonder what we'll find",
-      bounds: { min: { x: -10, y: 0, z: -15 }, max: { x: 10, y: 10, z: 15 } },
-      stageMeshes: [
-        {
-          asset: {
-            isAsset: true,
-            type: "mesh",
-            url: "landscapeTileAdraco.glb",
-            hash: "landscapeTileAdraco.glb",
-          },
-          length: 125,
-        },
-        {
-          asset: {
-            isAsset: true,
-            type: "mesh",
-            url: "landscapeTileBdraco.glb",
-            hash: "landscapeTileBdraco.glb",
-          },
-          length: 125,
-        },
-      ],
-      phases: [
-        {
-          delayAfter: 0,
-          instructions: [
-            {
-              at: 0,
-              _editorTrack: 1,
-              type: "playMusic",
-              asset: {
-                isAsset: true,
-                type: "sound",
-                url: "Dolls in Pseudo Paradise - Eternal Shrine Maiden.mp3",
-                hash: "Dolls in Pseudo Paradise - Eternal Shrine Maiden.mp3",
-              },
-            },
-            {
-              at: 1000,
-              _editorTrack: 1,
-              type: "spawnEnemy",
-              hidden: false,
-              asset: {
-                isAsset: true,
-                type: "mesh",
-                url: "blueFairy.glb",
-              },
-              hurtSound: {
-                isAsset: true,
-                type: "sound",
-                url: "damage.wav",
-              },
-              position: { x: 0, y: 0, z: 15 },
-              instructions: [],
             },
           ],
         },

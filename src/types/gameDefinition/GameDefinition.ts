@@ -1,8 +1,10 @@
 import { defaultAssets } from "../../utils/DefaultAssets";
 import {
+  makeMeshAssetDefinition,
   makeSoundAssetDefinition,
   MeshAssetDefinition,
   SoundAssetDefinition,
+  TerrainAssetDefinition,
 } from "./AssetDefinition";
 import { EditorInstruction } from "./CommonDefinition";
 import { EnemyInstruction } from "./EnemyDefinition";
@@ -62,34 +64,26 @@ export const makePhaseDefinition = (): PhaseDefinition => ({
   instructions: [],
 });
 
-export type StageMeshDefinition = {
-  asset: MeshAssetDefinition;
-  length: number;
+export type TerrainStageDefinition = {
+  type: "terrain";
+  asset: TerrainAssetDefinition;
+  grass: MeshAssetDefinition;
+  trees: MeshAssetDefinition[];
 };
 
-export type StageDefinition = {
-  title: string;
-  subtitle: string;
-  bounds: {
-    min: IVector3;
-    max: IVector3;
-  };
-  stageMeshes: StageMeshDefinition[];
-  phases: PhaseDefinition[];
+export type MeshStageDefinition = {
+  type: "mesh";
+  asset: MeshAssetDefinition;
 };
+
+export type StageDefinition = TerrainStageDefinition | MeshStageDefinition;
 
 export const makeStageDefinition = (): StageDefinition => ({
-  title: "",
-  subtitle: "",
-  bounds: {
-    min: { x: 10, y: 0, z: 10 },
-    max: { x: -10, y: 0, z: -10 },
-  },
-  stageMeshes: [],
-  phases: [makePhaseDefinition()],
+  type: "mesh",
+  asset: makeMeshAssetDefinition(),
 });
 
 export type GameDefinition = {
+  stageDefinition: StageDefinition;
   playableCharacters: PlayableCharacterDefinition[];
-  stages: StageDefinition[];
 };

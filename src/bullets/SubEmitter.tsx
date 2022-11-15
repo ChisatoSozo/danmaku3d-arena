@@ -9,19 +9,12 @@ interface SubEmitterProps {
   position: IVector3;
 }
 
-export const SubEmitter: React.FC<SubEmitterProps> = ({
-  username,
-  bulletPatternDefinition,
-  position,
-}) => {
+export const SubEmitter: React.FC<SubEmitterProps> = ({ username, bulletPatternDefinition, position }) => {
   const positionVector = useVectorMemo(position);
 
   return (
     <transformNode name="" position={positionVector}>
-      <BulletPatternComponent
-        username={username}
-        bulletPatternDefinition={bulletPatternDefinition}
-      />
+      <BulletPatternComponent username={username} bulletPatternDefinition={bulletPatternDefinition} />
     </transformNode>
   );
 };

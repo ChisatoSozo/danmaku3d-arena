@@ -14,19 +14,15 @@ import { BindActionObservables } from "./player/ActionObservables";
 import { Physics } from "./player/Physics";
 import { PlayerHead } from "./player/PlayerHead";
 import { PlayerRoot } from "./player/PlayerRoot";
-import { SkyBox } from "./terrain/SkyBox";
+import { Sun } from "./terrain/Sun";
+import { Terrain } from "./terrain/Terrain";
 import { mutableGlobals } from "./utils/MutableGlobals";
 
 const engineOptions = { stencil: true };
 
 function LoadGame({ children }: PropsWithChildren<{}>) {
   const scene = useScene();
-  const gameLoaderOutput = useLoadGame(
-    definition,
-    "",
-    undefined,
-    scene || undefined
-  );
+  const gameLoaderOutput = useLoadGame(definition, "", undefined, scene || undefined);
 
   if (!scene) {
     return null;
@@ -40,56 +36,29 @@ function LoadGame({ children }: PropsWithChildren<{}>) {
     );
   }
 
-  return (
-    <GameContainer assets={gameLoaderOutput.loadedAssets}>
-      {children}
-    </GameContainer>
-  );
+  return <GameContainer assets={gameLoaderOutput.loadedAssets}>{children}</GameContainer>;
 }
 
 function App() {
   return (
-    <Engine
-      antialias
-      adaptToDeviceRatio
-      canvasId="babylonJS"
-      engineOptions={engineOptions}
-    >
+    <Engine antialias adaptToDeviceRatio canvasId="babylonJS" engineOptions={engineOptions}>
       <Scene>
         <LoadGame>
           <UserContainer>
-            <PlayerRoot>
-              <PlayerHead>
+            <Sun>
+              <PlayerRoot>
                 <Emitters username={mutableGlobals.username} />
-                <targetCamera
-                  fov={1.0472}
-                  name="camera"
-                  minZ={0.1}
-                  maxZ={10000}
-                  position={new Vector3(0, 0, 0)}
-                />
-              </PlayerHead>
-            </PlayerRoot>
-            <BindActionObservables />
-            <Physics />
-            <hemisphericLight
-              name="light1"
-              intensity={0.7}
-              direction={Vector3.Up()}
-            />
-            <ground name="ground" width={1000} height={1000}>
-              <standardMaterial name="groundmat" useLogarithmicDepth>
-                <texture
-                  url="/textures/grass.jpg"
-                  assignTo="diffuseTexture"
-                  uScale={300}
-                  vScale={300}
-                />
-              </standardMaterial>
-            </ground>
-            <Characters />
-            <Online />
-            <SkyBox />
+                <PlayerHead>
+                  <targetCamera fov={1.0472} name="camera" minZ={0.1} maxZ={10000} position={new Vector3(0, 0, 0)} />
+                </PlayerHead>
+              </PlayerRoot>
+              <BindActionObservables />
+              <Physics />
+              <hemisphericLight name="light1" intensity={0.1} direction={Vector3.Up()} />
+              <Characters />
+              <Online />
+              {definition.stageDefinition.type === "terrain" && <Terrain terrainAssetDefinition={definition.stageDefinition} />}
+            </Sun>
           </UserContainer>
         </LoadGame>
       </Scene>
