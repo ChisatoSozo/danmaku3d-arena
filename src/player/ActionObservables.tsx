@@ -1,10 +1,15 @@
 import { Observable, Vector2 } from "@babylonjs/core";
 import { KeyboardEvent, useCallback, useEffect } from "react";
+import { touhou } from "../protos-generated-client/proto.pbjs";
 import { getPose } from "../utils/MutableGlobals";
+
+let lastJumpTime = 0;
 
 export const actionObservables = {
   move: new Observable<Vector2>(),
   jump: new Observable<null>(),
+  fly: new Observable<null>(),
+  flyBoost: new Observable<boolean>(),
   land: new Observable<null>(),
   shoot: new Observable<boolean>(),
 };
@@ -47,7 +52,12 @@ export const BindActionObservables = () => {
       }
 
       if (keyboardEvent.key === " ") {
-        actionObservables.jump.notifyObservers(null);
+        if (getPose().movementState === touhou.MovementState.FALLING && Date.now() - lastJumpTime < 500) {
+          actionObservables.fly.notifyObservers(null);
+        } else {
+          actionObservables.jump.notifyObservers(null);
+        }
+        actionObservables.flyBoost.notifyObservers(true);
       }
 
       emitMoveObservable();
@@ -61,6 +71,11 @@ export const BindActionObservables = () => {
         if (keyboardEvent.key === movementKeys[typedDirection]) {
           movementKeysDown[typedDirection] = false;
         }
+      }
+
+      if (keyboardEvent.key === " ") {
+        actionObservables.flyBoost.notifyObservers(false);
+        lastJumpTime = Date.now();
       }
 
       emitMoveObservable();

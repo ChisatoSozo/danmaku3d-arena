@@ -1,9 +1,11 @@
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
 import { useMemo, useRef, useState } from "react";
 import { TerrainStageDefinition } from "../types/gameDefinition/GameDefinition";
+import { TerrainGrassComponent } from "./LODGrass";
 import { SkyBox } from "./SkyBox";
 import { TerrainContext } from "./TerrainContext";
 import { TerrainMesh, TerrainMeshComponent } from "./TerrainMesh";
+import { Trees } from "./Trees";
 import { Water } from "./Water";
 
 export const mapSize = 8000;
@@ -21,10 +23,10 @@ export const Terrain = ({ terrainAssetDefinition }: TerrainProps) => {
   return (
     <TerrainContext.Provider value={providerValue}>
       <TerrainMeshComponent />
-      {/* <Trees mapSize={mapSize} heightScale={heightScale} terrainAssetDefinition={terrainAssetDefinition} /> */}
+      <Trees mapSize={mapSize} heightScale={heightScale} terrainAssetDefinition={terrainAssetDefinition} />
       <Water skyBoxRef={skyBoxRef} y={heightScale * 0.337} />
       <SkyBox skyBoxRef={skyBoxRef} />
-      {/* <TerrainGrassComponent grassMeshDefinition={terrainAssetDefinition.grass} /> */}
+      <TerrainGrassComponent grassMeshDefinition={terrainAssetDefinition.grass} />
     </TerrainContext.Provider>
   );
 };

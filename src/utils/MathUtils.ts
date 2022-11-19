@@ -26,63 +26,31 @@ export const extractBasis = (quat: Quaternion) => {
   };
 };
 
-export const blerp = (
-  values: number[][],
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  x: number,
-  y: number
-) => {
-  const q11 =
-    (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x1][y1];
-  const q21 =
-    (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x2][y1];
-  const q12 =
-    (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x1][y2];
-  const q22 =
-    (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x2][y2];
+export const blerp = (values: number[][], x1: number, y1: number, x2: number, y2: number, x: number, y: number) => {
+  const q11 = (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x1][y1];
+  const q21 = (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x2][y1];
+  const q12 = (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x1][y2];
+  const q22 = (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x2][y2];
   return q11 + q21 + q12 + q22;
 };
 
-export const blerpVec = (
-  values: Vector3[][],
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  x: number,
-  y: number
-) => {
-  const q11x =
-    (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x1][y1].x;
-  const q21x =
-    (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x2][y1].x;
-  const q12x =
-    (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x1][y2].x;
-  const q22x =
-    (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x2][y2].x;
+export const blerpVec = (values: Vector3[][], x1: number, y1: number, x2: number, y2: number, x: number, y: number) => {
+  const q11x = (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x1][y1].x;
+  const q21x = (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x2][y1].x;
+  const q12x = (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x1][y2].x;
+  const q22x = (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x2][y2].x;
   const xNew = q11x + q21x + q12x + q22x;
 
-  const q11y =
-    (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x1][y1].y;
-  const q21y =
-    (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x2][y1].y;
-  const q12y =
-    (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x1][y2].y;
-  const q22y =
-    (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x2][y2].y;
+  const q11y = (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x1][y1].y;
+  const q21y = (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x2][y1].y;
+  const q12y = (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x1][y2].y;
+  const q22y = (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x2][y2].y;
   const yNew = q11y + q21y + q12y + q22y;
 
-  const q11z =
-    (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x1][y1].z;
-  const q21z =
-    (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x2][y1].z;
-  const q12z =
-    (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x1][y2].z;
-  const q22z =
-    (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x2][y2].z;
+  const q11z = (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x1][y1].z;
+  const q21z = (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values[x2][y1].z;
+  const q12z = (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x1][y2].z;
+  const q22z = (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values[x2][y2].z;
   const zNew = q11z + q21z + q12z + q22z;
 
   const normal = new Vector3(xNew, yNew, zNew);
@@ -99,34 +67,22 @@ export const blerpVecFunc = (
   x: number,
   y: number
 ) => {
-  const q11x =
-    (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x1, y1).x;
-  const q21x =
-    (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x2, y1).x;
-  const q12x =
-    (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x1, y2).x;
-  const q22x =
-    (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x2, y2).x;
+  const q11x = (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x1, y1).x;
+  const q21x = (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x2, y1).x;
+  const q12x = (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x1, y2).x;
+  const q22x = (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x2, y2).x;
   const xNew = q11x + q21x + q12x + q22x;
 
-  const q11y =
-    (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x1, y1).y;
-  const q21y =
-    (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x2, y1).y;
-  const q12y =
-    (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x1, y2).y;
-  const q22y =
-    (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x2, y2).y;
+  const q11y = (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x1, y1).y;
+  const q21y = (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x2, y1).y;
+  const q12y = (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x1, y2).y;
+  const q22y = (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x2, y2).y;
   const yNew = q11y + q21y + q12y + q22y;
 
-  const q11z =
-    (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x1, y1).z;
-  const q21z =
-    (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x2, y1).z;
-  const q12z =
-    (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x1, y2).z;
-  const q22z =
-    (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x2, y2).z;
+  const q11z = (((x2 - x) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x1, y1).z;
+  const q21z = (((x - x1) * (y2 - y)) / ((x2 - x1) * (y2 - y1))) * values(x2, y1).z;
+  const q12z = (((x2 - x) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x1, y2).z;
+  const q22z = (((x - x1) * (y - y1)) / ((x2 - x1) * (y2 - y1))) * values(x2, y2).z;
   const zNew = q11z + q21z + q12z + q22z;
 
   const normal = new Vector3(xNew, yNew, zNew);
@@ -141,6 +97,11 @@ export const getRandomInt = (min: number, max: number) => {
 };
 
 export const getForwardVector = (rotation: Quaternion) => {
-  const forward = new Vector3(0, 0, 1);
-  return forward.applyRotationQuaternion(rotation);
+  const { forward } = extractBasis(rotation);
+  return forward;
+};
+
+export const getRotationAroundAxis = (axis: Vector3, angle: number) => {
+  const rotation = Quaternion.RotationAxis(axis, angle);
+  return rotation;
 };

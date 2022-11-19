@@ -9,7 +9,6 @@ import { Emitters } from "./dynamic-renderables/Emitters";
 import Engine from "./forks/Engine";
 import { definition } from "./gameDefinition/definition";
 import { useLoadGame } from "./hooks/useLoadGame";
-import { Online } from "./network/Online";
 import { BindActionObservables } from "./player/ActionObservables";
 import { Physics } from "./player/Physics";
 import { PlayerHead } from "./player/PlayerHead";
@@ -56,7 +55,7 @@ function App() {
               <Physics />
               <hemisphericLight name="light1" intensity={0.1} direction={Vector3.Up()} />
               <Characters />
-              <Online />
+              {/* <Online /> */}
               {definition.stageDefinition.type === "terrain" && <Terrain terrainAssetDefinition={definition.stageDefinition} />}
             </Sun>
           </UserContainer>
